@@ -1,0 +1,21 @@
+<html>
+    <body>
+        <form method="POST" enctype="multipart/form-data">
+            <label for="song1">Select a vocal stem to start:</label>
+            <select name="stem_id" id="stem" required>
+                <option value="" disabled selected>Select a stem…</option>
+                {% for stem in stems %}
+                  <option value="{{ stem.id }}">
+                    {{ stem.song.name }}
+                  </option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Submit">
+        </form>
+    </body>
+
+    <button type="button" onclick="window.location.href='/load';">
+        Load Song
+      </button>
+
+</html>

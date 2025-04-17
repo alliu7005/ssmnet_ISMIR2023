@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+
+    <img src = "../static/uploads/vis.png" id="image">
+    <button id="playButton">Play</button>
+    <audio id="audioPlayer" src="../static/uploads/mashup.wav"></audio>
+
+    <script>
+        const playButton = document.getElementById('playButton');
+        const audioPlayer = document.getElementById('audioPlayer');
+
+      // Add click event listener on the button
+        playButton.addEventListener('click', function() {
+        // Check if the audio is paused
+        if (audioPlayer.paused) {
+            audioPlayer.play();           // Play the audio
+            playButton.textContent = 'Pause';  // Update button text
+        } else {
+            audioPlayer.pause();          // Pause the audio
+            playButton.textContent = 'Play';   // Update button text
+        }
+      });
+    </script>
+
+</body>
+</html>
