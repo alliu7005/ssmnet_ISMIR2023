@@ -320,6 +320,7 @@ class Stem:
             self.active = np.array(active)
         else:
             self.active= np.array([(0, self.song_len-1)])
+            
 
     def force_silence(self, silence):
         if len(silence) != 0:
@@ -406,6 +407,7 @@ class Stem:
             bound1, bound2 = active[j]
             bound1 = int(bound1)
             bound2 = int(bound2)
+            #print(bound1, bound2)
             bound1 = downbeats[bound1]
             bound2 = downbeats[bound2]
             specgram_array.append(librosa.feature.melspectrogram(y=self.y[bound1:bound2],sr=self.sr))
@@ -414,22 +416,32 @@ class Stem:
     def change_tempo(self, desired_beats, desired_downbeats):
 
         new_audio_segments = []
-        new_beats = [desired_beats[0]]
+        new_downbeats = [desired_downbeats[0]]
 
-        for i in range(len(self.beats) - 1):
-            start_sample = librosa.time_to_samples(self.beats[i], sr=self.sr)
-            end_sample = librosa.time_to_samples(self.beats[i+1], sr=self.sr)
+        for i in range(len(self.downbeats) - 1):
+            start_sample = librosa.time_to_samples(self.downbeats[i], sr=self.sr)
+            end_sample = librosa.time_to_samples(self.downbeats[i+1], sr=self.sr)
             segment = self.y[start_sample:end_sample]
-            original_duration = self.beats[i+1] - self.beats[i]
-            target_duration = desired_beats[i+1] - desired_beats[i]
+            original_duration = self.downbeats[i+1] - self.downbeats[i]
+            target_duration = desired_downbeats[i+1] - desired_downbeats[i]
             rate = original_duration/target_duration
             stretched = librosa.effects.time_stretch(segment, rate = rate)
             new_audio_segments.append(stretched)
-            new_beats.append(desired_beats[i+1])
+            new_downbeats.append(desired_downbeats[i+1])
+
+        start_sample = librosa.time_to_samples(self.downbeats[-1], sr=self.sr)
+        end_sample = len(self.y) - 1
+        end_time = librosa.samples_to_time(end_sample, sr=self.sr)
+        segment = self.y[start_sample:end_sample]
+        original_duration = self.downbeats[-1] - end_time
+        target_duration = desired_downbeats[-1] - end_time
+        rate = original_duration/target_duration
+        stretched = librosa.effects.time_stretch(segment, rate = rate)
+        new_audio_segments.append(stretched)
 
         self.y = np.concatenate(new_audio_segments)
-        self.downbeats = desired_downbeats
-        self.beats = np.array(new_beats)
+        self.beats = desired_beats
+        self.downbeats = np.array(new_downbeats)
         self.tempo = 60/np.mean(np.diff(self.beats))
 
     def set_key(self, key):
@@ -484,10 +496,10 @@ class Mashup:
         sf.write("bass.wav", self.bass.y, self.sr, subtype='PCM_16')
         sf.write("drums.wav", self.drums.y, self.sr, subtype='PCM_16')
 
-        self.vocals.downbeats = self.vocals.downbeats[self.vocals.bounds[self.section]:self.vocals.bounds[self.section]+16]
-        self.other.downbeats = self.other.downbeats[self.other.bounds[self.section]:self.other.bounds[self.section]+16]
-        self.bass.downbeats = self.bass.downbeats[self.bass.bounds[self.section]:self.bass.bounds[self.section]+16]
-        self.drums.downbeats = self.drums.downbeats[self.drums.bounds[self.section]:self.drums.bounds[self.section]+16]
+        self.vocals.downbeats = self.vocals.downbeats[self.vocals.bounds[self.section]:self.vocals.bounds[self.section]+17]
+        self.other.downbeats = self.other.downbeats[self.other.bounds[self.section]:self.other.bounds[self.section]+17]
+        self.bass.downbeats = self.bass.downbeats[self.bass.bounds[self.section]:self.bass.bounds[self.section]+17]
+        self.drums.downbeats = self.drums.downbeats[self.drums.bounds[self.section]:self.drums.bounds[self.section]+17]
 
         self.vocals.beats = self.vocals.beats[np.where(self.vocals.beats == self.vocals.downbeats[0])[0][0]:np.where(self.vocals.beats == self.vocals.downbeats[-1])[0][0]+1]
         self.other.beats = self.other.beats[np.where(self.other.beats == self.other.downbeats[0])[0][0]:np.where(self.other.beats == self.other.downbeats[-1])[0][0]+1]
@@ -507,14 +519,18 @@ class Mashup:
         self.song_len = len(self.vocals.downbeats)
         self.set_songlen()
        
-
-        self.tempo = 60/np.mean(np.diff(self.vocals.beats))
+        tempo_before_conversion = np.mean(np.diff(self.vocals.beats))
+        self.tempo = 60/tempo_before_conversion
         #print(self.tempo)
         #self.vocals.change_tempo(self.vocals.beats)
-        desired_beats = np.around([i * np.mean(np.diff(self.vocals.beats)) for i in range(len(self.vocals.beats))],2)
+        desired_beats = np.around([i * tempo_before_conversion for i in range(len(self.vocals.beats))],2)
         desired_downbeats = np.around([i * np.mean(np.diff(self.vocals.downbeats)) for i in range(len(self.vocals.downbeats))],2)
+        #print(self.bass.beats, self.bass.downbeats)
+        #print(len(self.bass.y))
         self.vocals.change_tempo(desired_beats, desired_downbeats)
         self.bass.change_tempo(desired_beats, desired_downbeats)
+        #print(self.bass.beats, self.bass.downbeats)
+        #print(len(self.bass.y))
         self.other.change_tempo(desired_beats, desired_downbeats)
         self.drums.change_tempo(desired_beats, desired_downbeats)
         
@@ -540,7 +556,7 @@ class Mashup:
             stem_silence = stem.silence - self.init_song.bounds[self.section]
             #print(stem_silence)
             for interval in stem_silence:
-                if interval[0] <= self.song_len and interval[1] > 0:
+                if interval[0] <= self.song_len - 1 and interval[1] > 0:
                     silence_array.append((max(interval[0],0), min(self.song_len - 1,interval[1])))
             init_song_silence[stem.name] = silence_array
         
