@@ -20,8 +20,8 @@ except (IndexError, ModuleNotFoundError):
 import librosa
 import torch
 
-import ssmnet.utils
-import ssmnet.model
+import ssmnet_ISMIR2023.ssmnet.utils
+import ssmnet_ISMIR2023.ssmnet.model
 
 
 
@@ -37,7 +37,7 @@ class SsmNetDeploy():
 
 
     def m_get_features(self, 
-                       audio_file: str) -> Tuple[np.ndarray, np.ndarray]:
+                       audio_v, sr_hz) -> Tuple[np.ndarray, np.ndarray]:
         """
         Compute the audio features
 
@@ -47,20 +47,20 @@ class SsmNetDeploy():
             feat_3m, 
             time_sec_v
         """
-        try:
-            audio_v, sr_hz = librosa.load(audio_file)
-        except:
-            sys.exit(f'something wrong in reading audio file "{audio_file}"')
-        
-        if len(audio_v)==0:
-            sys.exit(f'something wrong in reading audio file "{audio_file}"')
+        #try:
+        #    audio_v, sr_hz = librosa.load(audio_file)
+        #except:
+        #    sys.exit(f'something wrong in reading audio file "{audio_file}"')
+        # 
+        #if len(audio_v)==0:
+        #    sys.exit(f'something wrong in reading audio file "{audio_file}"')
 
-        logmel_m, time_sec_v = ssmnet.utils.f_extract_feature(audio_v, sr_hz)
-        logmel_sync_m, time_sync_sec_v = ssmnet.utils.f_reduce_time(
+        logmel_m, time_sec_v = ssmnet_ISMIR2023.ssmnet.utils.f_extract_feature(audio_v, sr_hz)
+        logmel_sync_m, time_sync_sec_v = ssmnet_ISMIR2023.ssmnet.utils.f_reduce_time(
             logmel_m,
             time_sec_v,
             self.config_d['features']['step_target_sec'])
-        feat_3m, time_sec_v = ssmnet.utils.f_patches(
+        feat_3m, time_sec_v = ssmnet_ISMIR2023.ssmnet.utils.f_patches(
             logmel_sync_m, time_sync_sec_v,
             self.config_d['features']['patch_halfduration_frame'],
             self.config_d['features']['patch_hop_frame'])
@@ -86,7 +86,7 @@ class SsmNetDeploy():
         #my_lighting = ssm_lightning.SsmLigthing.load_from_checkpoint(config_d['model']['file'])
         #hat_novelty_v, hat_ssm_m = my_lighting.model.get_novelty( torch.from_numpy(feat_3m) )
         # --- using ony torch
-        model = ssmnet.model.SsmNet(self.config_d['model'], self.step_sec)
+        model = ssmnet_ISMIR2023.ssmnet.model.SsmNet(self.config_d['model'], self.step_sec)
         file_state_dict =  os.path.join(os.path.dirname(__file__), 
                                         "weights_deploy", 
                                         self.config_d['model']['file'].replace('.ckpt', '_state_dict.pt'))
@@ -121,7 +121,7 @@ class SsmNetDeploy():
             hat_boundary_sec_v, 
             hat_boundary_frame_v
         """
-        hat_boundary_frame_v = ssmnet.utils.f_get_peaks(hat_novelty_np, self.config_d['postprocessing'], self.step_sec)
+        hat_boundary_frame_v = ssmnet_ISMIR2023.ssmnet.utils.f_get_peaks(hat_novelty_np, self.config_d['postprocessing'], self.step_sec)
 
         hat_boundary_sec_v = time_sec_v[hat_boundary_frame_v]
         # --- add start and end-time
