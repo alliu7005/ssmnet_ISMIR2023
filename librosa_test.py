@@ -183,7 +183,7 @@ def mfcc(y, sr, downbeats):
         end = downbeats[-1]
         y_segment = y[start:end]
         #y_segment = librosa.effects.harmonic(y_segment)
-        mfcc = librosa.feature.mfcc(y=y_segment, sr=sr,n_mfcc=80)
+        mfcc = librosa.feature.mfcc(y=y_segment, sr=sr,n_mfcc=13)
         avg_mfcc_for_bar = np.mean(mfcc, axis=1)
         mfcc_array.append(avg_mfcc_for_bar)
     else:

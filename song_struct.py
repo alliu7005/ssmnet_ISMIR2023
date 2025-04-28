@@ -60,8 +60,8 @@ class Song_Struct:
             self.key, self.major = librosa_test.find_key(orig_y,self.sr)
             self.set_bounds()
         else:
-            self.beats = beats
-            self.downbeats = downbeats
+            self.beats = np.array(beats)
+            self.downbeats = np.array(downbeats)
             self.tempo = tempo
             self.key = key
             self.major = major
@@ -342,8 +342,8 @@ class Stem:
             bound2 = int(bound2)
             bound1 = downbeats[bound1]
             bound2 = downbeats[bound2]
-            chroma_array.append(librosa_test.chroma(self.y[bound1:bound2],self.sr, self.downbeats))
-        self.chroma = chroma_array
+            #chroma_array.append(librosa_test.chroma(self.y[bound1:bound2],self.sr, self.downbeats))
+        self.chroma = librosa.feature.chroma_cqt(y=self.y,sr=self.sr)
         #print(self.chroma)
 
     def get_mfcc(self):
@@ -356,8 +356,9 @@ class Stem:
             bound2 = int(bound2)
             bound1 = downbeats[bound1]
             bound2 = downbeats[bound2]
-            mfcc_array.append(librosa_test.mfcc(self.y[bound1:bound2],self.sr, self.downbeats))
-        self.mfcc = mfcc_array
+            #mfcc_array.append(librosa_test.mfcc(self.y[bound1:bound2],self.sr, self.downbeats))
+        self.mfcc = librosa.feature.mfcc(y=self.y,sr=self.sr, n_mfcc=13)
+        print(self.mfcc.shape)
 
     def get_stft(self):
         downbeats = librosa_test.times_to_samples(self.downbeats, self.sr)
@@ -396,8 +397,8 @@ class Stem:
             bound2 = int(bound2)
             bound1 = downbeats[bound1]
             bound2 = downbeats[bound2]
-            tonnetz_array.append(librosa_test.tonnetz(self.y[bound1:bound2],self.sr, self.chroma[j]))
-        self.tonnetz = tonnetz_array
+            #tonnetz_array.append(librosa_test.tonnetz(self.y[bound1:bound2],self.sr, self.chroma[j]))
+        self.tonnetz = librosa_test.tonnetz(self.y,self.sr, self.chroma)
 
     def get_specgram(self):
         downbeats = librosa_test.times_to_samples(self.downbeats, self.sr)
@@ -431,13 +432,20 @@ class Stem:
 
         start_sample = librosa.time_to_samples(self.downbeats[-1], sr=self.sr)
         end_sample = len(self.y) - 1
-        end_time = librosa.samples_to_time(end_sample, sr=self.sr)
+        end_time = np.around(librosa.samples_to_time(end_sample, sr=self.sr),2)
         segment = self.y[start_sample:end_sample]
         original_duration = self.downbeats[-1] - end_time
         target_duration = desired_downbeats[-1] - end_time
-        rate = original_duration/target_duration
-        stretched = librosa.effects.time_stretch(segment, rate = rate)
-        new_audio_segments.append(stretched)
+        print(original_duration, target_duration, rate)
+        if original_duration<=0 or target_duration<=0:
+            new_audio_segments.append(segment)
+        else:
+            rate = original_duration/target_duration
+            print(end_time)
+            print(self.downbeats, desired_downbeats)
+            print(original_duration, target_duration, rate)
+            stretched = librosa.effects.time_stretch(segment, rate = rate)
+            new_audio_segments.append(stretched)
 
         self.y = np.concatenate(new_audio_segments)
         self.beats = desired_beats
@@ -636,7 +644,9 @@ class Mashup:
         sf.write("bass.wav", self.bass.y, self.sr, subtype='PCM_16')
         sf.write("drums.wav", self.drums.y, self.sr, subtype='PCM_16')
         vocal_audio = AudioSegment.from_wav("vocals.wav")
+        vocal_audio -= 5
         other_audio = AudioSegment.from_wav("other.wav")
+        other_audio += 5
         bass_audio = AudioSegment.from_wav("bass.wav")
         bass_audio += 5
         drums_audio = AudioSegment.from_wav("drums.wav")

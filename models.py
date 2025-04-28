@@ -50,7 +50,11 @@ class GraphModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    data = db.Column(db.JSON)
+    data = db.Column(db.PickleType)
+
+def graph_from_orm(orm):
+    data = orm.data
+    return data
 
 def song_from_orm(orm):
     name = orm.name

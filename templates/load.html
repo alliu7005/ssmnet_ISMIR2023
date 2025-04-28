@@ -1,11 +1,115 @@
-<html>
-    <body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Song</title>
+  <style>
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #121212;
+      color: #FFFFFF;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+
+    .form-container {
+      background: #282828;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 380px;
+      box-sizing: border-box;
+    }
+    .form-container h1 {
+      margin: 0 0 1.5rem;
+      font-size: 1.4rem;
+      text-align: center;
+      font-weight: 300;
+    }
+
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+      color: #B3B3B3;
+    }
+    .form-group input[type="file"],
+    .form-group input[type="text"] {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      background: #383838;
+      border: none;
+      border-radius: 4px;
+      color: #FFFFFF;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .form-group input[type="file"]::-webkit-file-upload-button {
+      background: #1DB954;
+      border: none;
+      padding: 0.4rem 1rem;
+      margin-right: 0.5rem;
+      border-radius: 4px;
+      color: #121212;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .form-group input[type="file"]::-moz-file-upload-button {
+      background: #1DB954;
+      border: none;
+      padding: 0.4rem 1rem;
+      margin-right: 0.5rem;
+      border-radius: 4px;
+      color: #121212;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .form-group input::placeholder {
+      color: #B3B3B3;
+    }
+
+
+    .submit-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background: #1DB954;
+      border: none;
+      border-radius: 4px;
+      color: #121212;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .submit-btn:hover {
+      background: #1ed760;
+    }
+  </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Upload a Song</h1>
         <form method="POST" enctype="multipart/form-data">
-            <label for="song1">Song file</label>
-            <input type="file" id="song1" name="song1">
-            <label for="name">Song Name</label>
-            <input type="text" id="name" name="name">
-            <input type="submit" value="Submit">
+            <div class="form-group">
+                <label for="song1">Song file</label>
+                <input type="file" id="song1" name="song1">
+            </div>
+            <div class="form-group">
+                <label for="name">Song Name</label>
+                <input type="text" id="name" name="name">
+            </div>
+            <button type="submit" class="submit-btn">Submit</button>
         </form>
-    </body>
+    </div>
+    
+</body>
 </html>

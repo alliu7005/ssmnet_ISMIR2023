@@ -14,7 +14,8 @@ import json
 import shutil
 import librosa
 from song_struct import Song_Struct, Stem, Mashup
-from models import db, SongModel, StemModel, GraphModel, song_from_orm, stem_from_orm
+from models import db, SongModel, StemModel, GraphModel, song_from_orm, stem_from_orm, graph_from_orm
+from graph import init_graph, add_song_to_graph
 
 
 app = Flask(__name__)
@@ -30,6 +31,7 @@ db.init_app(app)
 
 #with app.app_context():
 #    db.create_all()
+    
 
 @app.route('/', methods = ['POST', 'GET'])
 def index():
@@ -41,7 +43,39 @@ def index():
         orm_stem = StemModel.query.filter_by(id=stem_id).all()[0]
         stem = stem_from_orm(orm_stem)
         song = stem.init_song
-        mashup = Mashup(song, stem, song.other, song.bass, song.drums)
+
+        vocal_other = GraphModel.query.filter_by(name="vocal_other").all()[0]
+        other_bass = GraphModel.query.filter_by(name="other_bass").all()[0]
+        vocal_drums = GraphModel.query.filter_by(name="vocal_drums").all()[0]
+
+        vocal_other_graph = [t for t in graph_from_orm(vocal_other) if t[0]==song.name and t[1]!=song.name]
+        vocal_drums_graph = [t for t in graph_from_orm(vocal_drums) if t[0]==song.name and t[1]!=song.name]
+
+        vocal_other_graph = sorted(vocal_other_graph, key=lambda x: x[2], reverse=True)
+        vocal_drums_graph = sorted(vocal_drums_graph, key=lambda x: x[2], reverse=True)
+
+        other_name = vocal_other_graph[0][1]
+        drums_name = vocal_drums_graph[0][1]
+
+        other_orm = StemModel.query.filter_by(songname=other_name,name="other").all()[0]
+        other_stem = stem_from_orm(other_orm)
+        drums_orm = StemModel.query.filter_by(songname=drums_name,name="drums").all()[0]
+        drums_stem = stem_from_orm(drums_orm)
+        print(graph_from_orm(other_bass), other_name, song.name)
+
+        other_bass_graph = [t for t in graph_from_orm(other_bass) if t[0]==other_name and t[1]!=other_name and t[1]!=song.name]
+
+        other_bass_graph = sorted(other_bass_graph, key=lambda x: x[2], reverse=True)
+
+        bass_name = other_bass_graph[0][1]
+        bass_orm = StemModel.query.filter_by(songname=bass_name,name="bass").all()[0]
+        bass_stem = stem_from_orm(bass_orm)
+        print(stem.init_song.name, other_stem.init_song.name, bass_stem.init_song.name, drums_stem.init_song.name)
+
+
+        print(vocal_other_graph)
+
+        mashup = Mashup(song, stem, other_stem, bass_stem, drums_stem)
 
         session["mashup"] = pickle.dumps(mashup)
         mashup.visualize(app.config['UPLOAD_FOLDER'])
@@ -116,6 +150,8 @@ def load():
         drums_dict = drums.to_dict()
         stems = [vocals_dict, other_dict, bass_dict, drums_dict]
         store_song_from_dict(song_dict, stems, db.session)
+        add_song_to_graph(db.session,song)
+        #init_graph(db.session)
     
     return render_template('load.html')
 
@@ -159,6 +195,10 @@ def store_song_from_dict(song_dict, stems, dbsession):
     print("stored song", song_model.name)
 
 
+
+
+
 if __name__ == '__main__':
     
     app.run()
+    

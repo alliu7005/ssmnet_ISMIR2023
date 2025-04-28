@@ -1,21 +1,113 @@
-<html>
-    <body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Select a Stem to Mashup</title>
+  <style>
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #121212;
+      color: #FFFFFF;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    .card {
+      background: #282828;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .card h1 {
+      margin: 0 0 1.5rem;
+      font-size: 1.4rem;
+      font-weight: 300;
+      color: #FFFFFF;
+    }
+
+
+    form {
+      margin-bottom: 1.5rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+      color: #B3B3B3;
+    }
+    .form-group select {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      background: #383838;
+      border: none;
+      border-radius: 4px;
+      color: #FFFFFF;
+      font-size: 1rem;
+      box-sizing: border-box;
+      appearance: none;
+    }
+
+
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      background: #1DB954;
+      border: none;
+      border-radius: 4px;
+      color: #121212;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      text-decoration: none;
+      text-align: center;
+    }
+    .btn:hover {
+      background: #1ed760;
+    }
+  </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Make a Mashup</h1>
+
         <form method="POST" enctype="multipart/form-data">
-            <label for="song1">Select a vocal stem to start:</label>
-            <select name="stem_id" id="stem" required>
-                <option value="" disabled selected>Select a stem…</option>
-                {% for stem in stems %}
-                  <option value="{{ stem.id }}">
-                    {{ stem.song.name }}
-                  </option>
-                {% endfor %}
-            </select>
-            <input type="submit" value="Submit">
+            <div class="form-group">
+                <label for="song1">Select a vocal stem to start:</label>
+                <select name="stem_id" id="stem" required>
+                    <option value="" disabled selected>Select a stem…</option>
+                    {% for stem in stems %}
+                    <option value="{{ stem.id }}">
+                        {{ stem.song.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button id="submit" type="submit" class="btn">Submit</button>
+
         </form>
+        <button type="button" class="btn" onclick="window.location.href='/load';">
+            Load Song
+        </button>
+
+    </div>
     </body>
 
-    <button type="button" onclick="window.location.href='/load';">
-        Load Song
-      </button>
+    
+
 
 </html>
