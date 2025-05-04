@@ -1,3 +1,4 @@
 [submodule "ssmnet_ISMIR2023"]
 	path = ssmnet_ISMIR2023
 	url = https://github.com/alliu7005/ssmnet_ISMIR2023.git
+	branch = main
