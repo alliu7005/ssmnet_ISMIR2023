@@ -92,6 +92,7 @@ def index():
     else:
         orm_stems = StemModel.query.filter_by(name="vocals").all()
         #stems = [stem_from_orm(s) for s in orm_stems]
+        #init_graph(db.session)
         return render_template('index.html', stems=orm_stems)
 
 @app.route('/res', methods = ['POST', 'GET'])

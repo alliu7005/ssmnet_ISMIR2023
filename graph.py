@@ -5,7 +5,7 @@ import numpy as np
 from scipy.spatial.distance import cosine
 
 def extract_stem_features(stem:Stem):
-    print(np.array(stem.mfcc).shape)
+    #print(np.array(stem.mfcc).shape)
     chroma=np.mean(np.array(stem.chroma),axis=1).flatten()
     mfcc=np.mean(np.array(stem.mfcc), axis=1).flatten()
     tempo=stem.tempo
@@ -87,9 +87,10 @@ def init_graph(dbsession):
     vocal_drums_graph = []
     for song1 in songs_extracted:
         for song2 in songs_extracted:
-            vocal_other_graph.append((song1.name, song2.name, vocals_other_compat(song1.vocals, song2.other)))
-            other_bass_graph.append((song1.name, song2.name, other_bass_compat(song1.other, song2.bass)))
-            vocal_drums_graph.append((song1.name, song2.name, vocals_drums_compat(song1.vocals, song2.drums)))
+            if song1.name != song2.name:
+                vocal_other_graph.append((song1.name, song2.name, vocals_other_compat(song1.vocals, song2.other)))
+                other_bass_graph.append((song1.name, song2.name, other_bass_compat(song1.other, song2.bass)))
+                vocal_drums_graph.append((song1.name, song2.name, vocals_drums_compat(song1.vocals, song2.drums)))
     
     print(vocal_other_graph)
     print(other_bass_graph)
@@ -123,12 +124,13 @@ def add_song_to_graph(dbsession, song):
         songs_extracted.append(song_ext)
 
     for song2 in songs_extracted:
-        vocal_other_graph.append((song.name, song2.name, vocals_other_compat(song.vocals, song2.other)))
-        other_bass_graph.append((song.name, song2.name, other_bass_compat(song.other, song2.bass)))
-        vocal_drums_graph.append((song.name, song2.name, vocals_drums_compat(song.vocals, song2.drums)))
-        vocal_other_graph.append((song2.name, song.name, vocals_other_compat(song2.vocals, song.other)))
-        other_bass_graph.append((song2.name, song.name, other_bass_compat(song2.other, song.bass)))
-        vocal_drums_graph.append((song2.name, song.name, vocals_drums_compat(song2.vocals, song.drums)))
+        if song.name != song2.name:
+            vocal_other_graph.append((song.name, song2.name, vocals_other_compat(song.vocals, song2.other)))
+            other_bass_graph.append((song.name, song2.name, other_bass_compat(song.other, song2.bass)))
+            vocal_drums_graph.append((song.name, song2.name, vocals_drums_compat(song.vocals, song2.drums)))
+            vocal_other_graph.append((song2.name, song.name, vocals_other_compat(song2.vocals, song.other)))
+            other_bass_graph.append((song2.name, song.name, other_bass_compat(song2.other, song.bass)))
+            vocal_drums_graph.append((song2.name, song.name, vocals_drums_compat(song2.vocals, song.drums)))
 
     print(vocal_other_graph)
     print(other_bass_graph)

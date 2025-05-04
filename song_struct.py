@@ -329,6 +329,7 @@ class Stem:
                 interval = librosa_test.times_to_samples(silence[i], self.sr)
                 #print(interval)
                 self.y[interval[0]:interval[1]] = 0
+                #print(self.y[interval[0]:interval[1]], self.name)
         self.silence = silence
         self.set_active()
 
@@ -358,7 +359,7 @@ class Stem:
             bound2 = downbeats[bound2]
             #mfcc_array.append(librosa_test.mfcc(self.y[bound1:bound2],self.sr, self.downbeats))
         self.mfcc = librosa.feature.mfcc(y=self.y,sr=self.sr, n_mfcc=13)
-        print(self.mfcc.shape)
+        #print(self.mfcc.shape)
 
     def get_stft(self):
         downbeats = librosa_test.times_to_samples(self.downbeats, self.sr)
@@ -436,14 +437,14 @@ class Stem:
         segment = self.y[start_sample:end_sample]
         original_duration = self.downbeats[-1] - end_time
         target_duration = desired_downbeats[-1] - end_time
-        print(original_duration, target_duration, rate)
+        #print(original_duration, target_duration, rate)
         if original_duration<=0 or target_duration<=0:
             new_audio_segments.append(segment)
         else:
             rate = original_duration/target_duration
-            print(end_time)
-            print(self.downbeats, desired_downbeats)
-            print(original_duration, target_duration, rate)
+            #print(end_time)
+            #print(self.downbeats, desired_downbeats)
+            #print(original_duration, target_duration, rate)
             stretched = librosa.effects.time_stretch(segment, rate = rate)
             new_audio_segments.append(stretched)
 
